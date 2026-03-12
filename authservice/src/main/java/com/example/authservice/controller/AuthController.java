@@ -48,12 +48,20 @@ public class AuthController {
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyIdentity(@RequestBody VerifyRequest request) {
-        return ResponseEntity.ok(authService.verifyIdentity(request.getIdentifier()));
+        try {
+            return ResponseEntity.ok(authService.verifyIdentity(request.getIdentifier()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/send-otp")
     public ResponseEntity<String> sendOtp(@RequestBody VerifyRequest request) {
-        return ResponseEntity.ok(authService.sendOtp(request.getIdentifier()));
+        try {
+            return ResponseEntity.ok(authService.sendOtp(request.getIdentifier()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/google")

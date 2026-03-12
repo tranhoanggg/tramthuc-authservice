@@ -41,6 +41,7 @@ public class SecurityConfig {
                 // Cho phép truy cập tự do vào các API Đăng ký/Đăng nhập và các file giao diện tĩnh (HTML/CSS/JS)
                 .requestMatchers(
                     "/api/auth/**", 
+                    "/error",
                     "/login.html", 
                     "/register.html", 
                     "/", 
