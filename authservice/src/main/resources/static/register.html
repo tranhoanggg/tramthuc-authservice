@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký tài khoản</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f7f6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 350px;
+      }
+      h2 {
+        text-align: center;
+        color: #333;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+      .link {
+        text-align: center;
+        margin-top: 15px;
+        display: block;
+        color: #007bff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Đăng Ký</h2>
+      <input type="text" id="username" placeholder="Tên đăng nhập" required />
+      <input type="password" id="password" placeholder="Mật khẩu" required />
+      <button onclick="handleRegister()">Tạo tài khoản</button>
+      <a href="/login.html" class="link">Đã có tài khoản? Đăng nhập ngay</a>
+    </div>
+
+    <script>
+      async function handleRegister() {
+        const user = document.getElementById("username").value;
+        const pass = document.getElementById("password").value;
+
+        // Gọi API Đăng ký của Spring Boot
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: user, password: pass }),
+        });
+
+        const result = await response.text();
+
+        if (response.ok) {
+          alert("Thành công: " + result);
+          window.location.href = "/login.html"; // Chuyển hướng sang trang đăng nhập
+        } else {
+          alert("Lỗi: " + result);
+        }
+      }
+    </script>
+  </body>
+</html>

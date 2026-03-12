@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập hệ thống</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f7f6;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 350px;
+        margin-bottom: 20px;
+      }
+      h2 {
+        text-align: center;
+        color: #333;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .link {
+        text-align: center;
+        margin-top: 15px;
+        display: block;
+        color: #28a745;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      /* Khu vực hiển thị kết quả test Token */
+      #profile-section {
+        display: none;
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        width: 100%;
+        max-width: 350px;
+        text-align: center;
+      }
+      .test-btn {
+        background-color: #6f42c1;
+        margin-bottom: 5px;
+      }
+      .test-btn:hover {
+        background-color: #5936a2;
+      }
+      /* Nút đăng xuất */
+      .logout-btn {
+        background-color: #dc3545;
+        margin-top: 15px;
+      }
+      .logout-btn:hover {
+        background-color: #c82333;
+      }
+      /* Dòng chú thích nhỏ */
+      .api-note {
+        font-size: 12px;
+        color: #6c757d;
+        font-style: italic;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card" id="login-box">
+      <h2>Đăng Nhập</h2>
+      <input type="text" id="username" placeholder="Tên đăng nhập" required />
+      <input type="password" id="password" placeholder="Mật khẩu" required />
+      <button onclick="handleLogin()">Đăng nhập</button>
+      <a href="/register.html" class="link">Chưa có tài khoản? Đăng ký ngay</a>
+    </div>
+
+    <div id="profile-section">
+      <h3 style="color: #155724">Đăng nhập thành công!</h3>
+      <p>Token của bạn đã được lưu vào LocalStorage.</p>
+
+      <button class="test-btn" onclick="testProtectedApi()">
+        Bấm vào đây để Test API Tuyệt Mật
+      </button>
+      <p class="api-note">
+        (API này mô phỏng việc lấy dữ liệu cá nhân. Bất kỳ ai không có Token hợp
+        lệ sẽ bị Server từ chối truy cập).
+      </p>
+
+      <p id="api-result" style="font-weight: bold; color: #d33"></p>
+
+      <button class="logout-btn" onclick="handleLogout()">Đăng xuất</button>
+    </div>
+
+    <script>
+      async function handleLogin() {
+        const user = document.getElementById("username").value;
+        const pass = document.getElementById("password").value;
+
+        // Gọi API Đăng nhập
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: user, password: pass }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // LƯU TOKEN VÀO BỘ NHỚ TRÌNH DUYỆT (LocalStorage)
+          localStorage.setItem("jwt_token", data.token);
+
+          // Ẩn form đăng nhập, hiện khu vực test
+          document.getElementById("login-box").style.display = "none";
+          document.getElementById("profile-section").style.display = "block";
+        } else {
+          alert("Đăng nhập thất bại! Sai tài khoản hoặc mật khẩu.");
+        }
+      }
+
+      async function testProtectedApi() {
+        // Lấy Token từ bộ nhớ ra
+        const token = localStorage.getItem("jwt_token");
+
+        // Gọi API Profile, nhét Token vào Header "Authorization"
+        const response = await fetch("/api/user/profile", {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
+
+        const result = await response.text();
+        document.getElementById("api-result").innerText =
+          "Kết quả từ Server: " + result;
+      }
+
+      async function handleLogout() {
+        const token = localStorage.getItem("jwt_token");
+
+        // 1. GỌI API ĐỂ BÁO CHO BACKEND CHO TOKEN VÀO SỔ ĐEN
+        if (token) {
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          });
+        }
+
+        // 2. Xóa Token khỏi trình duyệt
+        localStorage.removeItem("jwt_token");
+
+        // 3. Reset lại UI
+        document.getElementById("api-result").innerText = "";
+        document.getElementById("profile-section").style.display = "none";
+        document.getElementById("login-box").style.display = "block";
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+
+        alert("Đã đăng xuất và thu hồi Token thành công!");
+      }
+    </script>
+  </body>
+</html>
