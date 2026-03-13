@@ -95,9 +95,8 @@ public class AuthService {
         }
     }
 
-    // ... (Giữ nguyên toàn bộ các hàm register, login, loginWithOtp, logout, googleLogin từ trước) ...
+    // 4. HÀM ĐĂNG KÝ (ĐÃ FIX LỖI DUPLICATE ENTRY CHO CHUỖI RỖNG)
     public String register(RegisterRequest request) {
-        // ... (Code cũ của bạn) ...
         if (request.getEmail() != null && !request.getEmail().isEmpty() && userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Lỗi: Email này đã được sử dụng!");
         }
@@ -109,12 +108,16 @@ public class AuthService {
                 ? passwordEncoder.encode(request.getPassword()) 
                 : null;
 
+        // BƯỚC QUAN TRỌNG: Chuẩn hoá chuỗi rỗng ("") thành null để MySQL/TiDB không bị lỗi Unique Constraint
+        String validEmail = (request.getEmail() != null && !request.getEmail().trim().isEmpty()) ? request.getEmail().trim() : null;
+        String validPhone = (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty()) ? request.getPhoneNumber().trim() : null;
+
         User user = User.builder()
                 .fullName(request.getFullName())
                 .dob(request.getDob()) 
                 .gender(request.getGender())
-                .email(request.getEmail())
-                .phoneNumber(request.getPhoneNumber())
+                .email(validEmail)       // Dùng biến đã chuẩn hoá
+                .phoneNumber(validPhone) // Dùng biến đã chuẩn hoá
                 .password(encodedPassword)
                 .role("ROLE_USER") 
                 .authProvider("LOCAL") 
