@@ -197,4 +197,25 @@ public class AuthService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    public String resetPassword(ResetPasswordRequest request) {
+        // 1. Kiểm tra OTP trong Redis
+        String savedOtp = redisTemplate.opsForValue().get("OTP:" + request.getIdentifier());
+        if (savedOtp == null || !savedOtp.equals(request.getOtp())) {
+            throw new RuntimeException("Mã OTP không chính xác hoặc đã hết hạn!");
+        }
+
+        // 2. Tìm người dùng
+        User user = userRepository.findByEmailOrPhoneNumber(request.getIdentifier(), request.getIdentifier())
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
+
+        // 3. Cập nhật mật khẩu mới (nhớ mã hóa BCrypt)
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // 4. Xóa OTP sau khi dùng xong
+        redisTemplate.delete("OTP:" + request.getIdentifier());
+
+        return "Đổi mật khẩu thành công!";
+    }
 }

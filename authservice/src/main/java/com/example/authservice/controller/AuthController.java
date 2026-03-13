@@ -5,6 +5,7 @@ import com.example.authservice.dto.GoogleLoginRequest;
 import com.example.authservice.dto.LoginOtpRequest;
 import com.example.authservice.dto.LoginRequest;
 import com.example.authservice.dto.RegisterRequest;
+import com.example.authservice.dto.ResetPasswordRequest;
 import com.example.authservice.dto.VerifyRequest;
 import com.example.authservice.service.AuthService;
 
@@ -77,6 +78,15 @@ public class AuthController {
     public ResponseEntity<?> loginWithOtp(@RequestBody LoginOtpRequest request) { // SỬA: Đổi thành <?>
         try {
             return ResponseEntity.ok(authService.loginWithOtp(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            return ResponseEntity.ok(authService.resetPassword(request));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
