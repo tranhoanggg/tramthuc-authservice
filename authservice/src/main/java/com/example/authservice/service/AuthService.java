@@ -141,10 +141,17 @@ public class AuthService {
         if (savedOtp == null || !savedOtp.equals(request.getOtp())) {
             throw new RuntimeException("Lỗi: Mã OTP không chính xác hoặc đã hết hạn!");
         }
-        User user = userRepository.findByEmailOrPhoneNumber(request.getIdentifier(), request.getIdentifier())
-                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
+        
         redisTemplate.delete("OTP:" + request.getIdentifier());
-        String token = jwtUtil.generateToken(user.getPrimaryIdentifier()); 
+
+        User user = userRepository.findByEmailOrPhoneNumber(request.getIdentifier(), request.getIdentifier())
+                .orElse(null);
+        
+        if (user == null) {
+            throw new RuntimeException("PHONE_NOT_REGISTERED|" + request.getIdentifier());
+        }
+        
+        String token = jwtUtil.generateToken(user.getEmail()); 
         return new AuthResponse(token);
     }
 

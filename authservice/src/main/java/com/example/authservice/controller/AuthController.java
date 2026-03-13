@@ -74,11 +74,11 @@ public class AuthController {
     }
 
     @PostMapping("/login-otp")
-    public ResponseEntity<AuthResponse> loginWithOtp(@RequestBody LoginOtpRequest request) {
+    public ResponseEntity<?> loginWithOtp(@RequestBody LoginOtpRequest request) { // SỬA: Đổi thành <?>
         try {
             return ResponseEntity.ok(authService.loginWithOtp(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
