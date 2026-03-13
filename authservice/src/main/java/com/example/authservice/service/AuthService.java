@@ -172,26 +172,19 @@ public class AuthService {
             if (payload == null || !payload.containsKey("email")) {
                 throw new RuntimeException("Token Google không hợp lệ hoặc đã hết hạn!");
             }
+            
             String email = (String) payload.get("email");
             String name = (String) payload.get("name");
             User user = userRepository.findByEmail(email).orElse(null);
+            
             if (user == null) {
-                user = User.builder()
-                        .fullName(name)
-                        .email(email)
-                        .phoneNumber("GOO-" + UUID.randomUUID().toString().substring(0, 8)) 
-                        .password("")
-                        .dob(LocalDate.now())
-                        .gender("Khác")
-                        .role("ROLE_USER")
-                        .authProvider("GOOGLE")
-                        .build();
-                userRepository.save(user);
+                throw new RuntimeException("GOOGLE_NOT_REGISTERED|" + email + "|" + (name != null ? name : ""));
             }
+            
             String token = jwtUtil.generateToken(user.getEmail());
             return new AuthResponse(token);
         } catch (Exception e) {
-            throw new RuntimeException("Xác thực Google thất bại: " + e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
