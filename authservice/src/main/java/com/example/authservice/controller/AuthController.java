@@ -65,11 +65,11 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<AuthResponse> googleLogin(@RequestBody GoogleLoginRequest request) {
+    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest request) { // SỬA: Thay <AuthResponse> thành <?>
         try {
             return ResponseEntity.ok(authService.googleLogin(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(new AuthResponse("Lỗi: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
